@@ -9,4 +9,6 @@ LABELS = {
     'EXEMPT': '工况免计', 'VALID': '采信有效', 'INSUFFICIENT': '有效分钟不足',
     'MATCH': '容差内', 'DEVIATION': '超过容差', 'NO_REPORT': '未找到报送',
     'NO_REFERENCE': '无可比小时值', 'REPORT_CONFLICT': '报送值冲突', 'OUTSIDE_REPORT': '报送超窗',
+    'EXCEEDED': '超限', 'PENDING': '缺数待判', 'COMPLIANT': '达标',
+    'BAD_RECEIVED': '收件时刻无效', 'BAD_FLOW_UNIT': '流量单位不支持',
 }

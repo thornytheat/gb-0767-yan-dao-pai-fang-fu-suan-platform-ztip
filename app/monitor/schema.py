@@ -10,6 +10,7 @@ HEADERS = {
     'minutes': 'stack,timestamp,value,unit,basis,moisture,oxygen,status,revision,received'.split(','),
     'modes': 'stack,start,end,mode'.split(','),
     'reports': 'stack,hour,value,ticket'.split(','),
+    'flows': 'stack,timestamp,value,unit,received'.split(','),
 }
 
 
@@ -22,6 +23,7 @@ class Window:
     reference: Decimal
     threshold: int
     tolerance: Decimal
+    emission_limit: Decimal
 
     @classmethod
     def parse(cls, raw):
@@ -29,11 +31,12 @@ class Window:
             start, end, cutoff = (minute(raw[key]) for key in ('start', 'end', 'cutoff'))
             stack, threshold = raw['stack'], raw['threshold']
             reference, tolerance = (number(raw[key]) for key in ('reference', 'tolerance'))
+            emission_limit = number(raw['emission_limit'])
             if (not isinstance(stack, str) or not stack.strip() or len(stack) > 40
                     or start.minute or end.minute or not HOUR <= end - start <= 24 * HOUR
                     or cutoff < end or type(threshold) is not int or not 1 <= threshold <= 60
-                    or not 0 <= reference <= 20 or tolerance < 0):
+                    or not 0 <= reference <= 20 or tolerance < 0 or emission_limit < 0):
                 raise ValueError
         except (KeyError, TypeError, ValueError):
             raise InputError('BAD_WINDOW', '监测时窗、截止或规则参数无效') from None
-        return cls(stack, start, end, cutoff, reference, threshold, tolerance)
+        return cls(stack, start, end, cutoff, reference, threshold, tolerance, emission_limit)

@@ -1,6 +1,9 @@
+from collections import Counter
 from functools import cached_property
 
 from app.monitor.counts import minute_counts
+from app.monitor.emission import account
+from app.monitor.flow import choose_flows
 from app.monitor.hours import aggregate
 from app.monitor.modes import mode_windows
 from app.monitor.oxygen import correct
@@ -8,7 +11,7 @@ from app.monitor.reconcile import compare
 from app.monitor.revision import choose
 from app.monitor.source import intake
 from app.monitor.validity import minute_evidence
-from app.numbers import display
+from app.numbers import display, display3
 
 STAGES = ('intake', 'oxygen', 'validity', 'hours', 'reports')
 
@@ -29,7 +32,7 @@ class Inspection:
             try:
                 dry, adjusted = correct(reading['fields'], self.window.reference)
                 evidence.update(dry_mg_nm3=display(dry), reference_mg_nm3=display(adjusted),
-                                reference_raw=adjusted, code='VALID')
+                                dry_raw=dry, reference_raw=adjusted, code='VALID')
             except ValueError as error:
                 evidence.update(dry_mg_nm3=None, reference_mg_nm3=None, code=str(error))
                 isolated.append(evidence)
@@ -49,10 +52,22 @@ class Inspection:
         return {'rows': rows, 'isolated_modes': isolated, 'reason_counts': minute_counts(rows)}
 
     @cached_property
+    def flow_selection(self):
+        return choose_flows(self.ledgers['flows'][0], self.window)
+
+    @cached_property
     def hours(self):
         rows = aggregate(self.validity['rows'], self.window)
-        return {'rows': rows, 'totals': {key: sum(row[key] for row in rows) for key in
-                                        ('scheduled', 'valid', 'exempt', 'missing', 'late')}}
+        flows, flows_isolated = self.flow_selection
+        emissions = account(self.validity['rows'], flows, self.window)
+        rows = [row | {'emission': emission} for row, emission in zip(rows, emissions, strict=True)]
+        verdicts = Counter(emission['code'] for emission in emissions)
+        return {'rows': rows, 'flows_isolated': flows_isolated,
+                'totals': {key: sum(row[key] for row in rows) for key in
+                           ('scheduled', 'valid', 'exempt', 'missing', 'late')},
+                'emission': {'limit_kg': display3(self.window.emission_limit),
+                             'exceeded': verdicts['EXCEEDED'], 'pending': verdicts['PENDING'],
+                             'compliant': verdicts['COMPLIANT'], 'exempt': verdicts['EXEMPT']}}
 
     @cached_property
     def reports(self):

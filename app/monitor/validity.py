@@ -18,4 +18,5 @@ def minute_evidence(window, accepted, conflicts, intervals):
             code = 'STATUS_FAULT' if reading['fields']['status'] != 'OK' else reading['code']
             yield base | {'state': 'missing', 'code': code, 'value': None}
         else:
-            yield base | {'state': 'valid', 'code': 'VALID', 'value': reading['reference_raw']}
+            yield base | {'state': 'valid', 'code': 'VALID', 'value': reading['reference_raw'],
+                          'dry': reading['dry_raw']}

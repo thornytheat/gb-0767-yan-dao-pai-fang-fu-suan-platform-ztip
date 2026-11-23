@@ -4,10 +4,11 @@
 
 | 文件 | 字段与约束 |
 |---|---|
-| window.json | `stack` 烟道字符串；`start,end,cutoff` 带偏移整分钟；`start,end` 对齐 UTC 整点且跨度 1–24 小时；`cutoff≥end`；`reference` 参比氧百分比字符串 0–20；`threshold` 有效分钟整数 1–60；`tolerance` mg/Nm³ 非负 Decimal 字符串 |
+| window.json | `stack` 烟道字符串；`start,end,cutoff` 带偏移整分钟；`start,end` 对齐 UTC 整点且跨度 1–24 小时；`cutoff≥end`；`reference` 参比氧百分比字符串 0–20；`threshold` 有效分钟整数 1–60；`tolerance` mg/Nm³ 非负 Decimal 字符串；`emission_limit` 小时排放量限值 kg/h 非负 Decimal 字符串 |
 | minutes.csv | `stack,timestamp,value,unit,basis,moisture,oxygen,status,revision,received`。浓度非负，单位 mg/Nm3、g/Nm3、ug/Nm3 或 µg/Nm3；干湿基 `dry/wet`，湿基必填湿度百分比；氧量百分比 0–20；仪器仅 `OK` 有效；修订号非负整数；收件时刻不得早于测量 |
 | modes.csv | `stack,start,end,mode`。带偏移整分钟区间，`STARTUP` 或 `SHUTDOWN` |
 | reports.csv | `stack,hour,value,ticket`。UTC 整点、参比干基浓度 mg/Nm³、原单据号字符串 |
+| flows.csv | `stack,timestamp,value,unit,received`。标况干流量非负，单位 Nm3/min 或 Nm3/h，统一折算 Nm3/min；零是有效读数；收件时刻不得早于测量、不得晚于收件截止 |
 
 CSV 用 UTF-8，可带 BOM；列顺序可变。引号内换行保留，`line` 是记录起始原件行。无内容报 `EMPTY_FILE`，仅表头返回 `header_only`，只有空行或坏行返回 `no_usable_rows` 并隔离。输入记录 = 可读 + 重复表头 + 结构隔离。`-`、`N/A`、`NULL`、`未知` 与空字段均缺值；`null` 为 JSON 缺值，零是有效读数。单文件文本上限 400,000 字符，请求上限 8 MiB。
 
@@ -18,7 +19,8 @@ CSV 用 UTF-8，可带 BOM；列顺序可变。引号内换行保留，`line` �
 3. 窗口和工况统一为 `[start,end)`。启停并集免计，重叠保留两个来源，`SHUTDOWN` 优先展示。剩余分钟按异常状态、缺测、冲突、数值失效分别记为缺证。应测 = 有效 + 免计 + 缺证。
 4. 每小时以完整精度求有效分钟算术平均，达门槛后以 `ROUND_HALF_UP` 公布两位小数；门槛固定，整小时免计时单列。时刻按 UTC 分桶，页面展示 UTC+08:00。
 5. 报送小时冲突按不同 Decimal 原值识别。可比值均显示两位，差额 = 复算 − 报送，绝对差额 ≤ 容差为一致。窗外报送单列，缺数与零分开。
+6. 小时排放量按同分钟干基实测浓度 mg/Nm³ × 标况干流量 Nm³/min 逐分钟核算，工况免计分钟不核算。缺测流量不补零：浓度无效或缺流量记录的非免计分钟记缺数。小时判定：已核算合计 > 限值判超限（缺数分钟排放非负，合计只增不减，不待补齐）；合计 ≤ 限值且无缺数判达标；合计 ≤ 限值且有缺数判缺数待判；整小时免计单列。比较用完整精度，页面按 0.001 kg 显示。流量记录同分钟同值择最早收件，异值整组冲突不采信，晚于截止或单位不符列入隔离。
 
 ## 本地边界
 
-只核验单烟道单污染物的浓度与小时有效性。流量、排放总量、合规限值判定及政策专有豁免由外部业务流程处理。按固定 UTC+08:00 显示，数据源必须提供偏移。
+只核验单烟道单污染物的浓度、小时有效性与小时排放量限值判定。更长周期排放总量、合规政策专有豁免由外部业务流程处理。按固定 UTC+08:00 显示，数据源必须提供偏移。

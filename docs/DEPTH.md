@@ -10,7 +10,7 @@
 | M1 分钟原件采信 | 检查原件、重复表头与坏行 | `GET /api/samples/dirty/intake` | `app/monitor/reader.py` `app/monitor/source.py` | `tests/test_intake.py` |
 | M2 干基与参比氧折算 | 核对修订、单位和折算值 | `GET /api/samples/dirty/oxygen` | `app/monitor/oxygen.py` `app/monitor/revision.py` | `tests/test_oxygen.py` |
 | M3 分钟有效性裁决 | 按分钟查看有效、免计与缺证 | `GET /api/samples/dirty/validity` | `app/monitor/validity.py` `app/monitor/modes.py` | `tests/test_validity.py` |
-| M4 小时汇总复算 | 比对有效分钟门槛和小时均值 | `GET /api/samples/dirty/hours` | `app/monitor/hours.py` | `tests/test_hours.py` |
+| M4 小时汇总复算 | 比对有效分钟门槛、小时均值与排放量判定 | `GET /api/samples/dirty/hours` | `app/monitor/hours.py` `app/monitor/emission.py` `app/monitor/flow.py` | `tests/test_hours.py` `tests/test_emission.py` |
 | M5 报送差异对账 | 核对差值、单据和游离报送 | `GET /api/samples/dirty/reports` | `app/monitor/reconcile.py` `app/monitor/reports.py` | `tests/test_reports.py` |
 | M6 批次留档复跑 | 汇总归档、并发复跑和查看历史 | `POST /api/runs` | `app/archive/run.py` `app/archive/store.py` | `tests/test_runs.py` |
 | M7 监测证据签发 | 下载和校验原件、摘要和判据 | `GET /api/export/{id}` | `app/archive/certificate.py` | `tests/test_evidence.py` |
@@ -30,13 +30,17 @@
 | TRAP-15 | mg、g、µg 混测 | 数量级错误 | 单位系数归一 | `app/monitor/oxygen.py` | `tests/test_oxygen.py::test_units` |
 | TRAP-19 | 启停工况重叠 | 重复免计或顺序覆盖 | 并集与停机优先 | `app/monitor/modes.py` | `tests/test_validity.py::test_overlap_priority` |
 | TRAP-23 | 末端分钟 | 多免计一分钟 | 半开区间 | `app/monitor/modes.py` | `tests/test_validity.py::test_half_open` |
+| TRAP-24 | 流量缺测补零 | 超限误判达标 | 缺数不补零，已核算超限即判超限，有缺数不判达标 | `app/monitor/emission.py` | `tests/test_emission.py::test_missing_flow_is_not_zero_filled` |
+| TRAP-25 | 显示值参与限值比较 | 2.5004 kg 显示 2.500 被判达标 | 完整精度比较，仅展示量化 | `app/monitor/emission.py` | `tests/test_emission.py::test_verdict_uses_full_precision_not_display` |
 
 ## 对账规则
 
 - 污样分钟源 109 条记录 = 可读 107 + 重复表头 1 + 结构隔离 1。
 - 120 个应测分钟 = 91 有效 + 8 工况免计 + 21 缺证。参比氧复算与报送按小时核对。
+- 污样流量源 89 条记录 = 采信 85 + 隔离 4（重复件 1、同分钟冲突 2、晚于截止 1）；01:50 有流量但浓度缺证，该分钟仍记缺数。
+- 排放量判定：08:00 已核算 40 分钟 2.936 kg 超 2.500 kg/h 判超限，09:00 已核算 44 分钟 1.980 kg 有 16 分钟缺数判缺数待判。
 - 内容摘要与规则版本组成留档键，原件和计算结果同事务存储，重复提交复用原清单。
 
 ## 已知边界
 
-输入接受 UTF-8 原件包。监测窗口最多 24 小时，数据包限长以控制内存。不推断本地无偏移时间或将分钟平均换算成质量排放。
+输入接受 UTF-8 原件包。监测窗口最多 24 小时，数据包限长以控制内存。不推断本地无偏移时间；排放量只按同分钟浓度与流量核算，不以分钟均值外推缺数分钟。

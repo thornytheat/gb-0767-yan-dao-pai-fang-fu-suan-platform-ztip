@@ -16,14 +16,14 @@ def sample(name):
 
 def input_packet(payload):
     if not isinstance(payload, dict) or set(payload) not in ({'sample'}, {'files'}):
-        raise InputError('BAD_PACKET', '选择内置样例或提供四份原件')
+        raise InputError('BAD_PACKET', '选择内置样例或提供五份原件')
     if 'sample' in payload:
         return sample(str(payload['sample'])), str(payload['sample'])
     files = payload['files']
     if not isinstance(files, dict) or set(files) != set(FILES) or any(
         not isinstance(value, str) or len(value) > SOURCE_LIMIT for value in files.values()
     ):
-        raise InputError('BAD_PACKET', '四份原件必须为限长 UTF-8 文本')
+        raise InputError('BAD_PACKET', '五份原件必须为限长 UTF-8 文本')
     try:
         for value in files.values():
             value.encode('utf-8')

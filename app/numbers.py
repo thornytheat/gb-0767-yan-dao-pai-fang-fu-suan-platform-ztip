@@ -2,6 +2,7 @@ from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 EMPTY = frozenset({'', '-', 'N/A', 'NULL', '未知'})
 CENT = Decimal('0.01')
+MILLI = Decimal('0.001')
 
 
 def number(raw):
@@ -18,3 +19,7 @@ def number(raw):
 
 def display(value):
     return format(value.quantize(CENT, rounding=ROUND_HALF_UP), 'f')
+
+
+def display3(value):
+    return format(value.quantize(MILLI, rounding=ROUND_HALF_UP), 'f')
