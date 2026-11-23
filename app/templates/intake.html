@@ -1,0 +1,2 @@
+<section class="panel"><h2>原件行数勾稽</h2>{% include 'intake_table.j2' %}</section>
+<section class="panel"><h2>CSV 隔离记录</h2>{% set ns = namespace(rows=[]) %}{% for f in result.intake.files %}{% set ns.rows = ns.rows + f.rejected %}{% endfor %}{% set rejects = ns.rows %}{% include 'issue_table.j2' %}</section>

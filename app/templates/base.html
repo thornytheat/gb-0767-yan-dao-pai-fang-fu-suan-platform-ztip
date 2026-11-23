@@ -1,0 +1,12 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>烟道排放复算台</title>
+<link rel="stylesheet" href="{{ url_for('static',filename='theme.css') }}"><link rel="stylesheet" href="{{ url_for('static',filename='layout.css') }}"><link rel="stylesheet" href="{{ url_for('static',filename='quality.css') }}">
+<script defer src="{{ url_for('static',filename='controls.js') }}"></script></head>
+<body><aside class="rail"><a class="brand" href="{{ url_for('desk.show',sample=name,run=run_id) }}"><span class="stackmark" aria-hidden="true"></span>烟道排放复算台</a><nav aria-label="监测工序">
+{% for key, label in pages.items() %}<a {% if page == key %}aria-current="page"{% endif %} href="{{ url_for('desk.show',page=key,sample=name,run=run_id) }}"><span>{{ '%02d'|format(loop.index) }}</span>{{ label }}</a>{% endfor %}</nav><div class="station"><small>监测烟道</small><strong>{{ meta.parameters.stack }}</strong></div></aside>
+<div class="workspace"><header class="toolbar"><div><small>{{ meta.parameters.stack }} / {{ meta.rule }}</small><h1>{{ pages.get(page,'排放质量总览') }}</h1></div>
+<form id="monitor-form" data-page="{{ page }}"><label>原件包 <select id="sample" name="sample"><option value="dirty" {% if name == 'dirty' %}selected{% endif %}>异常与迟补样例</option><option value="clean" {% if name == 'clean' %}selected{% endif %}>干净样例</option></select></label><button type="submit">归档复算</button></form></header>
+<main><p id="feedback" role="status" hidden></p>
+{% set totals = result.hours.totals %}<div class="kpis"><div><small>应测分钟</small><strong>{{ totals.scheduled }}</strong></div><div><small>有效分钟</small><strong>{{ totals.valid }}</strong></div><div><small>工况免计</small><strong>{{ totals.exempt }}</strong></div><div><small>缺证分钟</small><strong>{{ totals.missing }}</strong></div><div><small>报送超差</small><strong>{{ result.reports.deviations }} <i>小时</i></strong></div></div>
+{% include ('home.j2' if page == 'home' else page ~ '.html') %}</main>
+<footer><span>{{ '归档' if run_id else '预览' }} · <code title="{{ meta.run_id }}">{{ meta.run_id[:12] }}</code></span><span>{{ meta.created_utc|default('未签发') }}</span><span>显示 UTC+08:00</span></footer></div></body></html>

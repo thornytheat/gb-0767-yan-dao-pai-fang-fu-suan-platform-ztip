@@ -1,0 +1,1 @@
+<div class="scroll"><table><thead><tr><th>原件</th><th>行号</th><th>原因</th><th>原值</th></tr></thead><tbody>{% for r in rejects %}<tr><td>{{ r.source }}</td><td>{{ r.line }}</td><td>{{ labels[r.code] }}</td><td class="raw" title="{{ r.raw|join(' · ') }}">{{ r.raw|join(' · ') }}</td></tr>{% else %}<tr><td colspan="4">无隔离项</td></tr>{% endfor %}</tbody></table></div>

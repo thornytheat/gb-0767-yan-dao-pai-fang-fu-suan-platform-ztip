@@ -1,0 +1,1 @@
+<section class="panel certificate"><h2>监测证据单</h2>{% if certificate %}<p>分钟勾稽差额 <b>{{ certificate.minute_balance }}</b></p><p>证据摘要 <code>{{ certificate.sha256 }}</code></p><a class="download" href="{{ url_for('api.export',run_id=run_id) }}">下载监测证据</a>{% else %}<p>先归档再签发。</p>{% endif %}</section>

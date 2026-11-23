@@ -1,0 +1,8 @@
+<div class="quality-grid">
+<section class="panel matrix-panel"><h2>分钟有效性矩阵</h2><div class="matrix-legend"><span>有效</span><span>免计</span><span>缺证</span></div>
+{% for hour in result.hours.rows %}{% set offset=loop.index0*60 %}<div class="matrix-line"><time>{{ hour.local }}</time><div class="matrix-cells">{% for row in result.validity.rows[offset:offset+60] %}<span class="cell {{ row.state }}" title="{{ row.local }} {{ labels[row.code] }}"></span>{% endfor %}</div></div>{% endfor %}
+<a href="{{ url_for('desk.show',page='validity',sample=name,run=run_id) }}">查看分钟判据 →</a></section>
+<section class="panel bar-panel"><h2>小时参比氧浓度</h2><p class="chart-scale">0 — {{ '%.2f'|format(ceiling) }} mg/Nm³</p><div class="chart">{% for row in result.hours.rows %}<div class="bar-group"><span>{{ row.mg_nm3 or '缺证' }}</span><div class="bar-track"><div style="--height:{{ (100*(row.mg_nm3|float)/ceiling) if row.mg_nm3 and ceiling else 0 }}%"></div></div><time>{{ row.local[-5:] }}</time></div>{% endfor %}</div></section>
+<section class="panel"><h2>小时报送差异</h2>{% include 'report_table.j2' %}</section>
+<section class="panel"><h2>原件与排除项</h2>{% include 'intake_table.j2' %}<a href="{{ url_for('desk.show',page='oxygen',sample=name,run=run_id) }}">核查折算与修订 →</a></section>
+</div>

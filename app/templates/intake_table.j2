@@ -1,0 +1,1 @@
+<div class="scroll"><table><thead><tr><th>原件</th><th>输入</th><th>可读</th><th>重复表头</th><th>隔离</th></tr></thead><tbody>{% for f in result.intake.files %}<tr><td>{{ f.source }}.csv</td><td>{{ f.input }}</td><td>{{ f.parsed }}</td><td>{{ f.headers }}</td><td>{{ f.isolated }}</td></tr>{% endfor %}</tbody></table></div>

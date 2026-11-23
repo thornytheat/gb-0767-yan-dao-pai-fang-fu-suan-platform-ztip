@@ -1,0 +1,8 @@
+:root {
+ --bg:#edf0e7; --rail:#e4e9da; --panel:#fbfcf7; --panel-2:#f1f4eb; --panel-3:#e5edd9;
+ --line:#d5ddcb; --line-2:#a8b69b; --ink:#242e21; --ink-2:#4d5c44; --ink-3:#596953;
+ --accent:#466b36; --accent-ink:#f6faef; --accent-soft:#dcedcd;
+ --ok:#397338; --warn:#805012; --bad:#943f30; --info:#5a6254;
+ --ui:"PingFang SC","Microsoft YaHei",sans-serif; --mono:"SFMono-Regular",Consolas,monospace;
+ --radius:3px; --radius-sm:2px; --row:32px; --gap:14px; --pad:16px; --bar:68px; --dur:120ms;
+}

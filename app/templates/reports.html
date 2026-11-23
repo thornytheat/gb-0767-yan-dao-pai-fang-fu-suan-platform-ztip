@@ -1,0 +1,2 @@
+<section class="panel"><h2>报送差值 · mg/Nm³</h2>{% include 'report_table.j2' %}<div class="report-tickets">{% for h in result.reports.rows %}{% for r in h.reports %}<p><code>{{ r.fields.ticket }}</code> · 原件第 {{ r.line }} 行 · {{ r.fields.value }} mg/Nm³</p>{% endfor %}{% endfor %}</div></section>
+<section class="panel"><h2>游离报送记录</h2>{% set rejects=result.reports.isolated %}{% include 'issue_table.j2' %}</section>

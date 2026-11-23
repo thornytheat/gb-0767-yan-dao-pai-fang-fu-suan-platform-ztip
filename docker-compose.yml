@@ -1,0 +1,7 @@
+services:
+  kiln-emissions:
+    build: .
+    ports: ["18466:8000"]
+    volumes: ["monitor-data:/data"]
+volumes:
+  monitor-data:
